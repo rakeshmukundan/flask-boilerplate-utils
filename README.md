@@ -1,7 +1,9 @@
-
-flask-boilerplate-utils
+Flask Boilerplate Utilities
 ============
 Boilerplate utilities for use with [Flask-Boilerplate](https://github.com/nickw444/Flask-Boilerplate). 
+
+Created to allow easy upgrading of boilerplates
+
 Also very useful as a standalone package.
 
 Installation
