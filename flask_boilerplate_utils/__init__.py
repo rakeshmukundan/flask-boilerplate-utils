@@ -7,6 +7,9 @@ from .filters import (
     local_date_time,
     get_autoincluded_assets
 )
+from flask.ext.babel import Babel
+
+
 class Boilerplate(object):
     """
     Configure the App with the standard boilerplate
@@ -37,7 +40,6 @@ class Boilerplate(object):
         )
 
         app.register_blueprint(bp)
-
         app.jinja_env.globals['csrf_setup'] = csrf_setup
         app.jinja_env.globals['render_field'] = render_field
         app.jinja_env.globals['html_assets'] = get_autoincluded_assets(app)()
@@ -45,6 +47,8 @@ class Boilerplate(object):
         app.jinja_env.filters['local_date_time'] = local_date_time
         app.jinja_env.filters['percent_escape'] = percent_escape
         app.jinja_env.filters['time_since'] = timesince
+
+        app.babel = Babel(app)
 
         if csrf_enabled:
             from flask_wtf.csrf import CsrfProtect
