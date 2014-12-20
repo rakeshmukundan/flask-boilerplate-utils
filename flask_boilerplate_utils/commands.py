@@ -21,7 +21,7 @@ class BaseCommand(Command):
 		self.app = app
 
 global_options = (Option('--config', '-c', dest='config', nargs=1, action='store', help='Provide'\
-            'a configuation class defined in config.'))
+            'a configuation class defined in config.'),)
 
 class Run(BaseCommand):
 	"Run the Flask Builtin Server (Not for production)"
