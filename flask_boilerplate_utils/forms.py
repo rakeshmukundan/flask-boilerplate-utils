@@ -1,4 +1,4 @@
-from wtforms.validators import Optional, ValidationError
+from wtforms.validators import Optional, ValidationError, StopValidation
 import os
 
 class ValidFileFormat(Optional):
@@ -25,6 +25,18 @@ class ValidFileFormat(Optional):
         filename, extension = os.path.splitext(field.data.filename)
         if not self.fileupload.extension_allowed(extension[1:].lower()):
             raise ValidationError(self.message)
+
+class StopIfEqualTo(object):
+    def __init__(self, getter, *args, **kwargs):
+        self.getter = getter
+
+    def __call__(self, form, field):
+        print("CALL")
+        print(field.data)
+        print(self.getter())
+        if field.data == self.getter():
+            raise StopValidation()
+
 
 
 class Unique(object):
