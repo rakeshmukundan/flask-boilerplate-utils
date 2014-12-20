@@ -1,11 +1,57 @@
+from flask.ext.script import Option, Manager, Command
 import re
-from urllib.request import urlopen
 import json
-from io import BytesIO
-from flask.ext.script import Option
 import os
 import zipfile
-from .BaseCommand import BaseCommand
+from io import BytesIO
+from urllib.request import urlopen
+
+# Manager Factory.
+def MainManager(app, **kwargs):
+	manager = Manager(app,**kwargs)
+	manager.add_command('server', Run(app))
+	manager.add_command('meinheld', Host(app))
+	manager.add_command('install', InstallFramework(app))
+	return manager
+
+
+class BaseCommand(Command):
+	def __init__(self, app):
+		super(Command, self).__init__()
+		self.app = app
+
+
+class Run(BaseCommand):
+	"Run the Flask Builtin Server (Not for production)"
+
+	option_list = (
+		Option('--hostname', '-h', dest='hostname', default='0.0.0.0', type=str),
+		Option('--port', '-p', dest='port', default=8000, type=int),
+		Option('--debug', '-d', dest='debug', default=True, action='store_true'),
+		Option('--config', '-c', dest='config', nargs=1, action='store', help='Provide'\
+			'a configuation class defined in config.'),
+	)
+
+	def run(self, port, hostname, debug, config):
+		self.app.run(debug=debug, host=hostname, port=port)
+
+class Host(BaseCommand):
+	"""
+	Run a Web Server for Hosting using meinheld.
+	"""
+
+	option_list = (
+		Option('--hostname', '-h', dest='hostname', default='0.0.0.0', type=str),
+		Option('--port', '-p', dest='port', default=8000, type=int),
+	)
+	def run(self, port, hostname):
+		from meinheld import server, patch
+		patch.patch_all()
+		print(" - Running Hosting Server using Meinheld")
+		print(" - http://%s:%s/" % (hostname, port))
+		server.listen((hostname, port))
+		server.run(self.app)
+
 
 github_suffix = ''
 
