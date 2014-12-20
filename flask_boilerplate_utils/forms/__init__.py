@@ -2,6 +2,16 @@ from wtforms.validators import Optional, ValidationError
 import os
 
 class ValidFileFormat(Optional):
+    """
+    Determines whether or not a file is valid for uploading
+    by checking with flask-uploads.
+
+    @param  fileupload  a FileUpload object from flask-uploads
+    @param  message message to display upon validation error.
+
+    @throws ValidationError if the uploaded data is not valid.
+    """
+
     def __init__(self, fileupload, *args, **kwargs):
         self.fileupload = fileupload
         self.message = 'The selected file cannot be uploaded. Only %s are allowed.' % (
@@ -22,12 +32,13 @@ class Unique(object):
     Throws ValidationError if the data alread exists in
     the database for the specified field.
 
-    @param string timestamp     formatted date to display
-    @param string priority      priority number
-    @param string priority_name priority name
-    @param string message       message to display
+    @param  model   SQL Alchemy ORM Model to target
+    @param  field   SQL Alchemy ORM Field to compare
+                    ie, Model.field
+    @param  message message to display upon validation error.
 
-    @return string formatted string
+    @throws ValidationError if the specified data already 
+            exists in the database
     """
     def __init__(self, model, field, *args, **kwargs):
         self.model = model
