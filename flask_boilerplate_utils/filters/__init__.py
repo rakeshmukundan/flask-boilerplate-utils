@@ -7,7 +7,7 @@ import json
 
 def timesince(dt, default="Just now."):
     """
-    Returns string representing "time since" e.g.
+    Returns a string representing "time since" e.g.
     3 days ago, 5 hours ago etc.
     """
 
@@ -32,18 +32,37 @@ def timesince(dt, default="Just now."):
     return default
 
 def local_date(datestamp):
-    return format_date(datestamp)
+    """
+    Returns a babel formatted local date
+    """
+    if datestamp:
+        return format_date(datestamp)
 
 def percent_escape(string):
+    """
+    Returns an escaped string using percentage symbols
+    Used for URL encodes
+    """
     return quote(string, '')
 
 def local_date_time(datestamp):
+    """
+    Returns a babel formatted local date and time
+    """
     if datestamp:
         return format_datetime(datestamp)
 
 # Use a factory to set the app variable.
 def get_autoincluded_assets(app):
+    """
+    A Factory wrapper which returns a function which
+    generates head tag assets for the site.
+    """
     def func(**kwargs):
+        """
+        Generates <head> tag assets for the site
+        and returns a string.
+        """
         fn = os.path.realpath('./Application/static/vendor/autoinclude.json')
         data = None
         with open(fn, 'r') as f:

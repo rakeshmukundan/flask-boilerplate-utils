@@ -6,10 +6,11 @@ class ValidFileFormat(Optional):
     Determines whether or not a file is valid for uploading
     by checking with flask-uploads.
 
-    @param  fileupload  a FileUpload object from flask-uploads
-    @param  message message to display upon validation error.
+    throws ValidationError if the uploaded data is not valid.
 
-    @throws ValidationError if the uploaded data is not valid.
+    :param fileupload:  a FileUpload object from flask-uploads
+    :param message: message to display upon validation error.
+
     """
 
     def __init__(self, fileupload, *args, **kwargs):
@@ -32,13 +33,13 @@ class Unique(object):
     Throws ValidationError if the data alread exists in
     the database for the specified field.
 
-    @param  model   SQL Alchemy ORM Model to target
-    @param  field   SQL Alchemy ORM Field to compare
-                    ie, Model.field
-    @param  message message to display upon validation error.
+    throws ValidationError if the specified data already 
+    exists in the database
 
-    @throws ValidationError if the specified data already 
-            exists in the database
+    :param model: SQL Alchemy ORM Model to target
+    :param field: SQL Alchemy ORM Field to compare
+                  ie, Model.field
+    :param message: message to display upon validation error.
     """
     def __init__(self, model, field, *args, **kwargs):
         self.model = model

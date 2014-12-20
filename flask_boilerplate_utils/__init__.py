@@ -8,6 +8,18 @@ from .filters import (
     get_autoincluded_assets
 )
 class Boilerplate(object):
+    """
+    Configure the App with the standard boilerplate
+    configuration.
+
+    :param app: the Flask Applciation
+    :param csrf_enabled: A boolean determining whether or not
+                         flask_wtf CSRF protection should
+                         be enabled.
+    :param use_sentry: A boolean determining whether or not
+                       Sentry should be used within the 
+                       production environment.
+    """
 
     def __init__(self, app=None, **kwargs):
         self.app = app
@@ -15,7 +27,8 @@ class Boilerplate(object):
         if app is not None:
             self._state = self.init_app(app, **kwargs)
 
-    def init_app(self, app):
+    def init_app(self, app, csrf_enabled=True,
+        use_sentry=True):
         bp = Blueprint(
             'boilerplate',
             __name__,
@@ -32,3 +45,13 @@ class Boilerplate(object):
         app.jinja_env.filters['local_date_time'] = local_date_time
         app.jinja_env.filters['percent_escape'] = percent_escape
         app.jinja_env.filters['time_since'] = timesince
+
+        if csrf_enabled:
+            from flask_wtf.csrf import CsrfProtect
+            app.csrf = CsrfProtect(app)
+
+
+        # Setup App Debug via Sentry (When in production)
+        if use_sentry and not app.debug:
+            from raven.contrib.flask import Sentry
+            app.sentry = Sentry(app)

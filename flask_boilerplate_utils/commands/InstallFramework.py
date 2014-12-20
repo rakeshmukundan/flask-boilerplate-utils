@@ -1,7 +1,7 @@
 import re
 from urllib.request import urlopen
 import json
-from io import StringIO, BytesIO
+from io import BytesIO
 from flask.ext.script import Option
 import os
 import zipfile
@@ -29,7 +29,10 @@ def extract(f,dist='dist', destination='./'):
                         o.write(d)
 
 class InstallFramework(BaseCommand):
-    "Install a CSS/JS package listed on bower OR A package from a github repository"
+    """
+    Install a CSS/JS package listed on bower OR A 
+    package from a github repository
+    """
     option_list = (
         Option('packages', action='store', metavar='PACKAGE',nargs='+', help="A package listed on bower OR A github repository. (user/repo)."),
         Option('--version', '-v', dest='version', type=str, help="Supply a version to use (Github tag or release)"),

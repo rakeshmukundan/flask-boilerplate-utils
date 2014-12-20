@@ -9,7 +9,7 @@ long_description = open(readme_path).read()
 
 setup(
   name='flask-boilerplate-utils',
-  version='0.1.0',
+  version='0.1.1',
   packages=['flask_boilerplate_utils'],
   author="Nick Whyte",
   author_email='nick@nickwhyte.com',
@@ -20,5 +20,9 @@ setup(
   zip_safe=False,
   install_requires=[
     "Flask",
+    "raven",
+    "flask-wtf",
+    "flask-babel",
+    "flask-script"
   ],
 )
