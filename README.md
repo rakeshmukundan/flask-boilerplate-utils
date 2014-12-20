@@ -1,8 +1,8 @@
 
 flask-boilerplate-utils
 ============
-Boilerplate utilities for use with Flask-Boilerplate. 
-Also useful as a standalone package.
+Boilerplate utilities for use with [Flask-Boilerplate](https://github.com/nickw444/Flask-Boilerplate). 
+Also very useful as a standalone package.
 
 Installation
 ------------
@@ -17,7 +17,6 @@ Usage
     
     app = Flask(__name__)
     Boilerplate(app)
-
 ```
 
 Full usage available at [read the docs](http://flask-boilerplate-utils.readthedocs.org/en/latest/)

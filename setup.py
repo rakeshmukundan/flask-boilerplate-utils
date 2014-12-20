@@ -15,7 +15,7 @@ setup(
   author_email='nick@nickwhyte.com',
   description="Additional functionality with easy upgrading for the flask-boilerplate.",
   long_description=long_description,
-  url='https://github.com/nickw444/flask-phantom-emoji',
+  url='https://github.com/nickw444/flask-boilerplate-utils',
   include_package_data=True,
   zip_safe=False,
   install_requires=[
