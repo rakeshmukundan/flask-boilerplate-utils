@@ -6,15 +6,15 @@ import zipfile
 from io import BytesIO
 from urllib.request import urlopen
 
-"""
-Helper classes and functions which take advantage of flask-script
-"""
 
 # Manager Factory.
 def MainManager(app, **kwargs):
     """
     A factory which creates a flask-script manager and configure it for use
     with the boilerplate. 
+
+    :param kwargs: keyword arguments to send to flask-script's Manager
+                   class initialiser
     """
 
     manager = Manager(app,**kwargs)
