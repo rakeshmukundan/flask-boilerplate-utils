@@ -9,7 +9,7 @@ long_description = open(readme_path).read()
 
 setup(
   name='flask-boilerplate-utils',
-  version='0.1.7',
+  version='0.1.8',
   packages=['flask_boilerplate_utils'],
   author="Nick Whyte",
   author_email='nick@nickwhyte.com',
