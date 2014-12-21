@@ -3,7 +3,7 @@ from setuptools import setup
 
 readme_path = os.path.join(os.path.dirname(
   os.path.abspath(__file__)),
-  'README.md',
+  'README.rst',
 )
 long_description = open(readme_path).read()
 

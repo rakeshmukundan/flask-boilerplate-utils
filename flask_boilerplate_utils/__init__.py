@@ -1,5 +1,5 @@
 from flask import Blueprint
-from .renderer import render_field, csrf_setup
+from .jinja_globals import render_field, csrf_setup
 from .filters import (
     timesince,
     local_date,

@@ -6,11 +6,10 @@ class ValidFileFormat(Optional):
     Determines whether or not a file is valid for uploading
     by checking with flask-uploads.
 
-    throws ValidationError if the uploaded data is not valid.
+    :throws ValidationError: ValidationError if the uploaded data is not valid.
 
     :param fileupload:  a FileUpload object from flask-uploads
     :param message: message to display upon validation error.
-
     """
 
     def __init__(self, fileupload, *args, **kwargs):
@@ -27,13 +26,22 @@ class ValidFileFormat(Optional):
             raise ValidationError(self.message)
 
 class StopIfEqualTo(object):
+    """
+    A validator for WTForms which will stop validating 
+    if the field data is equal to the getter function passed
+    as a parameter.
+
+    :throws StopValidation: StopValidation if the field value is equal 
+                            to the getter's returned value.
+    
+    :param getter: A function pointer which will be used to get
+                   the value to compare.
+
+    """
     def __init__(self, getter, *args, **kwargs):
         self.getter = getter
 
     def __call__(self, form, field):
-        print("CALL")
-        print(field.data)
-        print(self.getter())
         if field.data == self.getter():
             raise StopValidation()
 
@@ -42,11 +50,9 @@ class StopIfEqualTo(object):
 class Unique(object):
     """
     Database Unique Validator for WTForms / SQLAlchemy.
-    Throws ValidationError if the data alread exists in
-    the database for the specified field.
 
-    throws ValidationError if the specified data already 
-    exists in the database
+    :throws ValidationError: ValidationError if the data already 
+                             exists in the database for the specified field.
 
     :param model: SQL Alchemy ORM Model to target
     :param field: SQL Alchemy ORM Field to compare
