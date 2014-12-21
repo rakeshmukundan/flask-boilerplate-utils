@@ -6,51 +6,57 @@ import zipfile
 from io import BytesIO
 from urllib.request import urlopen
 
+
 # Manager Factory.
 def MainManager(app, **kwargs):
-	manager = Manager(app,**kwargs)
-	manager.add_command('server', Run(app))
-	manager.add_command('meinheld', Host(app))
-	manager.add_command('install', InstallFramework(app))
-	return manager
+    manager = Manager(app,**kwargs)
+    manager.add_command('server', Run(app))
+    manager.add_command('meinheld', Host(app))
+    manager.add_command('install', InstallFramework(app))
+    manager.add_command('import', Import(app))
+    return manager
 
 
 class BaseCommand(Command):
-	def __init__(self, app):
-		super(Command, self).__init__()
-		self.app = app
+    def __init__(self, app):
+        super(Command, self).__init__()
+        self.app = app
 
 global_options = (Option('--config', '-c', dest='config', nargs=1, action='store', help='Provide'\
             'a configuation class defined in config.'),)
 
 class Run(BaseCommand):
-	"Run the Flask Builtin Server (Not for production)"
+    "Run the Flask Builtin Server (Not for production)"
 
-	option_list = (
-		Option('--hostname', '-h', dest='hostname', default='0.0.0.0', type=str),
-		Option('--port', '-p', dest='port', default=8000, type=int),
-		Option('--debug', '-d', dest='debug', default=True, action='store_true'),		
-	) + global_options
+    option_list = (
+        Option('--hostname', '-h', dest='hostname', default='0.0.0.0', type=str),
+        Option('--port', '-p', dest='port', default=8000, type=int),
+        Option('--debug', '-d', dest='debug', default=True, action='store_true'),       
+    ) + global_options
 
-	def run(self, port, hostname, debug, config, **kwargs):
-		self.app.run(debug=debug, host=hostname, port=port)
+    def run(self, port, hostname, debug, config, **kwargs):
+        self.app.run(debug=debug, host=hostname, port=port)
+
+class Import(BaseCommand):
+    def run(self):
+        pass
 
 class Host(BaseCommand):
-	"""
-	Run a Web Server for Hosting using meinheld.
-	"""
+    """
+    Run a Web Server for Hosting using meinheld.
+    """
 
-	option_list = (
-		Option('--hostname', '-h', dest='hostname', default='0.0.0.0', type=str),
-		Option('--port', '-p', dest='port', default=8000, type=int),
-	) + global_options
-	def run(self, port, hostname, **kwargs):
-		from meinheld import server, patch
-		patch.patch_all()
-		print(" - Running Hosting Server using Meinheld")
-		print(" - http://%s:%s/" % (hostname, port))
-		server.listen((hostname, port))
-		server.run(self.app)
+    option_list = (
+        Option('--hostname', '-h', dest='hostname', default='0.0.0.0', type=str),
+        Option('--port', '-p', dest='port', default=8000, type=int),
+    ) + global_options
+    def run(self, port, hostname, **kwargs):
+        from meinheld import server, patch
+        patch.patch_all()
+        print(" - Running Hosting Server using Meinheld")
+        print(" - http://%s:%s/" % (hostname, port))
+        server.listen((hostname, port))
+        server.run(self.app)
 
 
 github_suffix = ''

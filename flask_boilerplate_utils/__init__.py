@@ -59,3 +59,7 @@ class Boilerplate(object):
         if use_sentry and not app.debug:
             from raven.contrib.flask import Sentry
             app.sentry = Sentry(app)
+
+
+
+

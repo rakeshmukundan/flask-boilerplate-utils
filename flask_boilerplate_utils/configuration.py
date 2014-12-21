@@ -1,4 +1,20 @@
 import os, sys, inspect
+from .buildtools import StandardVirtualEnvTarget
+
+class BaseConfiguration(object):
+    dependencies = (StandardVirtualEnvTarget,)
+
+    @classmethod
+    def diction(cls):
+        diction = {name: getattr(cls, name) for name in dir(cls) if not name.startswith('__') }
+        return diction
+
+    @classmethod
+    def build_dependencies(cls):
+        for TargetClass in cls.dependencies:
+            target = TargetClass()
+            target.build(format_dict=cls.diction())
+
 
 
 def choose_config(config_module,**kwargs):
@@ -14,8 +30,8 @@ def choose_config(config_module,**kwargs):
     clsmembers = inspect.getmembers(config_module, inspect.isclass)
     clsmembers = dict(clsmembers)
     if class_name in clsmembers:
-        sys.stderr.write(" * Using configuration class '%s'\n" % class_name)
-        return clsmembers[class_name]
+        cls = clsmembers[class_name]
+        return cls
 
     raise Exception("Configuration class '%s' could not be found." % (class_name))
 
@@ -23,7 +39,7 @@ def choose_config(config_module,**kwargs):
 """
 Generate the Security keys on the fly if they do not exist in the repo
 """
-d = './Application/config/'
+d = './config/'
 salt_file = os.path.realpath(os.path.join(d, './salt.key'))
 security_key_file = os.path.realpath(os.path.join(d, './security.key'))
 
