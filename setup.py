@@ -6,10 +6,16 @@ readme_path = os.path.join(os.path.dirname(
   'README.rst',
 )
 long_description = open(readme_path).read()
+version_path = os.path.join(os.path.dirname(
+  os.path.abspath(__file__)),
+  'VERSION',
+)
+version = open(version_path).read()
+
 
 setup(
   name='flask-boilerplate-utils',
-  version='0.1.8',
+  version=version,
   packages=['flask_boilerplate_utils'],
   author="Nick Whyte",
   author_email='nick@nickwhyte.com',
