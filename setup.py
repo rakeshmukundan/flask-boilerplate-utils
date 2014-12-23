@@ -23,6 +23,7 @@ setup(
     "raven",
     "flask-wtf",
     "flask-babel",
-    "flask-script"
+    "flask-script",
+    "meinheld",
   ],
 )
