@@ -31,7 +31,7 @@ class Boilerplate(object):
             self._state = self.init_app(app, **kwargs)
 
     def init_app(self, app, csrf_enabled=True,
-        use_sentry=True):
+        use_sentry=True, with_html_assets=True):
         bp = Blueprint(
             'boilerplate',
             __name__,
@@ -42,7 +42,8 @@ class Boilerplate(object):
         app.register_blueprint(bp)
         app.jinja_env.globals['csrf_setup'] = csrf_setup
         app.jinja_env.globals['render_field'] = render_field
-        app.jinja_env.globals['html_assets'] = get_autoincluded_assets(app)()
+        if with_html_assets:
+            app.jinja_env.globals['html_assets'] = get_autoincluded_assets(app)()
         app.jinja_env.filters['local_date'] = local_date
         app.jinja_env.filters['local_date_time'] = local_date_time
         app.jinja_env.filters['percent_escape'] = percent_escape
