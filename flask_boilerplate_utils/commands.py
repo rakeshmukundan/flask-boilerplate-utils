@@ -43,11 +43,21 @@ class Run(BaseCommand):
 
     option_list = (
         Option('--hostname', '-h', dest='hostname', default='0.0.0.0', type=str),
-        Option('--port', '-p', dest='port', default=8000, type=int),
+        Option('--port', '-p', dest='port', default=None, type=int),
         Option('--debug', '-d', dest='debug', default=True, action='store_true'),       
     ) + BaseCommand.option_list
 
     def run(self, port, hostname, debug, config, **kwargs):
+        if port is None and 'LISTEN_PORT' in self.app.config:
+            port = self.app.config['LISTEN_PORT']
+        else:
+            port = 8000
+
+        if hostname is None and 'LISTEN_HOST' in self.app.config:
+            hostname = self.app.config['LISTEN_HOST']
+        else:
+            hostname = '0.0.0.0'
+
         self.app.run(debug=debug, host=hostname, port=port)
 
 class Import(BaseCommand):
@@ -64,6 +74,16 @@ class Host(BaseCommand):
         Option('--port', '-p', dest='port', default=8000, type=int),
     ) + BaseCommand.option_list
     def run(self, port, hostname, **kwargs):
+        if port is None and 'LISTEN_PORT' in self.app.config:
+            port = self.app.config['LISTEN_PORT']
+        else:
+            port = 8000
+
+        if hostname is None and 'LISTEN_HOST' in self.app.config:
+            hostname = self.app.config['LISTEN_HOST']
+        else:
+            hostname = '0.0.0.0'
+
         from meinheld import server, patch
         patch.patch_all()
         print(" - Running Hosting Server using Meinheld")
