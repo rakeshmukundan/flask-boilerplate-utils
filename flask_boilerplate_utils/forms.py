@@ -69,3 +69,14 @@ class Unique(object):
     def __call__(self, form, field):
         if self.model.query.filter(self.field == field.data).count() > 0:
             raise ValidationError(self.message)
+
+
+class OptionalFileField(validators.Optional):
+    """
+    Ignores validation if a file is not provided.
+    :throws StopValidation: StopValidation if a file is not provided.
+    """
+
+    def __call__(self, form, field):
+        if field.data.filename == '':
+            raise validators.StopValidation()
