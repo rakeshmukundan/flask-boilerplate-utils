@@ -31,5 +31,6 @@ setup(
     "flask-babel",
     "flask-script",
     "meinheld",
+    "flask-classy"
   ],
 )
