@@ -71,7 +71,7 @@ class Unique(object):
             raise ValidationError(self.message)
 
 
-class OptionalFileField(validators.Optional):
+class OptionalFileField(Optional):
     """
     Ignores validation if a file is not provided.
     :throws StopValidation: StopValidation if a file is not provided.
@@ -79,4 +79,4 @@ class OptionalFileField(validators.Optional):
 
     def __call__(self, form, field):
         if field.data.filename == '':
-            raise validators.StopValidation()
+            raise StopValidation()
