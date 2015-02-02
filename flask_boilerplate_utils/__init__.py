@@ -31,7 +31,9 @@ class Boilerplate(object):
             self._state = self.init_app(app, **kwargs)
 
     def init_app(self, app, csrf_enabled=True,
-        use_sentry=True, with_html_assets=True):
+        use_sentry=True, with_html_assets=True,
+        with_redis_sessions=False,
+        redis_db_number=1):
         bp = Blueprint(
             'boilerplate',
             __name__,
@@ -61,6 +63,11 @@ class Boilerplate(object):
             from raven.contrib.flask import Sentry
             app.sentry = Sentry(app)
 
+        if with_redis_sessions or app.config.get('USE_REDIS_SESSIONS', False):
+            from .RedisSessionInterface import RedisSessionInterface
+            from redis import Redis
+            redis = Redis(db=redis_db_number)
+            app.session_interface = RedisSessionInterface(redis=redis)
 
 
 
