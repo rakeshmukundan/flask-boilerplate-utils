@@ -22,7 +22,7 @@ class MenuFlaskView(FlaskView):
                     cls._menu_items.append(menu_item)
         cls._menu_items.sort(key=lambda x: x[2])
 
-    def before_request(self, name):
+    def before_request(self, name, **kwargs):
         """
         Make the menu items accessible to the template renderer.
         Currently there is no context_preprocessor available for 
