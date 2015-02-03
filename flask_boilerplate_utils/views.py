@@ -28,6 +28,7 @@ class MenuFlaskView(FlaskView):
         Currently there is no context_preprocessor available for 
         FlaskView's, so this is as good as it gets.
         """
+        g.menu_kwargs = kwargs
         g.menu_items = self._menu_items
 
 def menu_item(title, identifier=None, position=0):
