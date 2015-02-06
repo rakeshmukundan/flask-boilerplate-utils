@@ -38,7 +38,8 @@ class Boilerplate(object):
             'boilerplate',
             __name__,
             template_folder='templates',
-            url_prefix='/bp'
+            url_prefix='/bp',
+            behind_reverse_proxy=False
         )
 
         app.register_blueprint(bp)
@@ -57,6 +58,9 @@ class Boilerplate(object):
             from flask_wtf.csrf import CsrfProtect
             app.csrf = CsrfProtect(app)
 
+        if behind_reverse_proxy:
+            from .ReverseProxied import ReverseProxied
+            app.wsgi_app = ReverseProxied(app.wsgi_app)
 
         # Setup App Debug via Sentry (When in production)
         if use_sentry and not app.debug:
