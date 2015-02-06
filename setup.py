@@ -23,9 +23,9 @@ setup(
   long_description=long_description,
   url='https://github.com/nickw444/flask-boilerplate-utils',
   include_package_data=True,
-  # package_data={
-  #   'templates':['*']
-  # },
+  package_data={
+    'templates':['*']
+  },
   zip_safe=False,
   install_requires=[
     "Flask",
