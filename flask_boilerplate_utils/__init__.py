@@ -33,13 +33,13 @@ class Boilerplate(object):
     def init_app(self, app, csrf_enabled=True,
         use_sentry=True, with_html_assets=True,
         with_redis_sessions=False,
-        redis_db_number=1):
+        redis_db_number=1,
+        behind_reverse_proxy=False):
         bp = Blueprint(
             'boilerplate',
             __name__,
             template_folder='templates',
             url_prefix='/bp',
-            behind_reverse_proxy=False
         )
 
         app.register_blueprint(bp)
