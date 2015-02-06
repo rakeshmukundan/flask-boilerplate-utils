@@ -22,7 +22,7 @@ setup(
   description="Additional functionality with easy upgrading for the flask-boilerplate.",
   long_description=long_description,
   url='https://github.com/nickw444/flask-boilerplate-utils',
-  # include_package_data=True,
+  include_package_data=True,
   # package_data={
   #   'templates':['*']
   # },
