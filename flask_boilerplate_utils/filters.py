@@ -11,7 +11,7 @@ def timesince(dt, default="Just now."):
     3 days ago, 5 hours ago etc.
     """
 
-    now = datetime.now()
+    now = datetime.utcnow()
     diff = now - dt
     
     periods = (
