@@ -132,6 +132,7 @@ class MenuFlaskView(FlaskView):
         """
         g._menu_kwargs = kwargs
         current_app.jinja_env.globals['menu_items'] = self._menu_items
+        current_app.jinja_env.globals['section_menu_items'] = self._root_item.children
 
 def menu_item(title='', identifier=None, position=10, menu_id=None, root_item=False, always_expanded=False):
     def decorator(f):
