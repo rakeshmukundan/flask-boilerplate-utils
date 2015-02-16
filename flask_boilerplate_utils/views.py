@@ -1,5 +1,21 @@
 from flask.ext.classy import FlaskView
-from flask import g
+from flask import g, url_for, request, current_app
+
+class MenuItem(object):
+    def __init__(self, title=None, identifier=None, position=0, href=None):
+        self.title = title
+        self.identifier = identifier
+        self.position = position
+        self.href = href
+
+    def is_active(self):
+        """
+        Helper method for determining whether or not a menui tem is currently active
+        """
+        return self.url() == request.path
+
+    def url(self, **kwargs):
+        return url_for(self.href, **g._menu_kwargs)
 
 class MenuFlaskView(FlaskView):
     @classmethod
@@ -18,9 +34,10 @@ class MenuFlaskView(FlaskView):
             if hasattr(meth, '_menu_items'):
                 href = '{}:{}'.format(cls.__name__, meth.__name__)
                 for menu_item in meth._menu_items:
-                    menu_item = menu_item + (href,)
+                    # menu_item = menu_item + (href,)
+                    menu_item.href = href
                     cls._menu_items.append(menu_item)
-        cls._menu_items.sort(key=lambda x: x[2])
+        cls._menu_items.sort(key=lambda x: x.position)
 
     def before_request(self, name, **kwargs):
         """
@@ -28,12 +45,16 @@ class MenuFlaskView(FlaskView):
         Currently there is no context_preprocessor available for 
         FlaskView's, so this is as good as it gets.
         """
-        g.menu_kwargs = kwargs
-        g.menu_items = self._menu_items
+        g._menu_kwargs = kwargs
+        current_app.jinja_env.globals['menu_items'] = self._menu_items
 
 def menu_item(title, identifier=None, position=0):
     def decorator(f):
-        item = (title, identifier or f.__name__, position)
+        item = MenuItem(
+            title=title,
+            identifier=identifier,
+            position=position
+        )
         if not hasattr(f, '_menu_items') or f._menu_items is None:
             f._menu_items = [item]
         else:
