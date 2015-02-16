@@ -64,7 +64,7 @@ class MenuItem(object):
         self.children.sort(key=lambda x: x.position)
 
     def has_children(self):
-        return bool(len(self.children))
+        return bool(len(self.children)) 
 
 class MenuFlaskView(FlaskView):
     @classmethod
@@ -111,8 +111,7 @@ class MenuFlaskView(FlaskView):
 
         cls._menu_items.sort(key=lambda x: x.position)
 
-        if has_root and hasattr(app, 'menu_manager') and \
-        cls._root_item.has_children():
+        if has_root and hasattr(app, 'menu_manager'):
             menu = app.menu_manager.get_menu(cls._root_item.menu_id)
             menu.register_item(cls._root_item)
 
