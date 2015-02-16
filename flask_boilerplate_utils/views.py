@@ -32,7 +32,8 @@ class Menu(object):
         return self.items.__iter__()
 
 class MenuItem(object):
-    def __init__(self, title=None, identifier=None, position=0, href=None, menu_id=None, _root_item=False):
+    def __init__(self, title=None, identifier=None, position=0, href=None,
+     menu_id=None, _root_item=False, always_expanded=False):
         self.title = title
         self.identifier = identifier
         self.position = position
@@ -40,6 +41,7 @@ class MenuItem(object):
         self.menu_id = menu_id
         self.children = []
         self._root_item = _root_item
+        self.always_expanded = always_expanded
 
     def is_active(self):
         """
@@ -49,6 +51,9 @@ class MenuItem(object):
 
     def child_is_active(self):
         return any([x.is_active() for x in self.children]) or self.is_active()
+
+    def should_show_children(self):
+        return self.always_expanded or self.child_is_active()
 
     def url(self, **kwargs):
         kw = {}
@@ -96,6 +101,9 @@ class MenuFlaskView(FlaskView):
                     if has_root and menu_item._root_item:
                         found_root_view = True
                         menu_item.menu_id = cls._root_item.menu_id
+                        menu_item.position = cls._root_item.position
+                        menu_item.children = cls._root_item.children
+                        menu_item.always_expanded = cls._root_item.always_expanded
                         cls._root_item = menu_item
                     else:
                         cls._menu_items.append(menu_item)
@@ -125,14 +133,15 @@ class MenuFlaskView(FlaskView):
         g._menu_kwargs = kwargs
         current_app.jinja_env.globals['menu_items'] = self._menu_items
 
-def menu_item(title='', identifier=None, position=0, menu_id=None, root_item=False):
+def menu_item(title='', identifier=None, position=10, menu_id=None, root_item=False, always_expanded=False):
     def decorator(f):
         item = MenuItem(
             title=title,
             identifier=identifier,
             position=position,
             menu_id=menu_id,
-            _root_item=root_item
+            _root_item=root_item,
+            always_expanded=always_expanded
         )
         if not hasattr(f, '_menu_items') or f._menu_items is None:
             f._menu_items = [item]
