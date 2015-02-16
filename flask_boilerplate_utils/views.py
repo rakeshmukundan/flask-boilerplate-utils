@@ -50,10 +50,10 @@ class MenuItem(object):
         return self.url() == request.path
 
     def child_is_active(self):
-        return any([x.is_active() for x in self.children]) or self.is_active()
+        return any([x.is_active() for x in self.children]) 
 
     def should_show_children(self):
-        return self.always_expanded or self.child_is_active()
+        return self.always_expanded or self.child_is_active() or self.is_active()
 
     def url(self, **kwargs):
         kw = {}
