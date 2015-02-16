@@ -32,6 +32,7 @@ class Boilerplate(object):
 
     def init_app(self, app, csrf_enabled=True,
         use_sentry=True, with_html_assets=True,
+        with_menu_manager=False,
         with_redis_sessions=False,
         redis_db_number=1,
         behind_reverse_proxy=False):
@@ -66,6 +67,11 @@ class Boilerplate(object):
         if use_sentry and not app.debug:
             from raven.contrib.flask import Sentry
             app.sentry = Sentry(app)
+
+        if with_menu_manager:
+            from .views import MenuManager
+            app.menu_manager = MenuManager()
+            app.jinja_env.globals['menus'] = app.menu_manager.menus
 
         if with_redis_sessions or app.config.get('USE_REDIS_SESSIONS', False):
             from .RedisSessionInterface import RedisSessionInterface
