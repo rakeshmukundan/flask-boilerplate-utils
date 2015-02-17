@@ -1,6 +1,12 @@
 from flask.ext.classy import FlaskView
 from flask import g, url_for, request, current_app
 from functools import wraps
+import inspect
+
+"""
+@menu_item('Lel, default_args={'some_id':22})
+"""
+
 class MenuManager(object):
     def __init__(self):
         self._menus = {}
@@ -35,7 +41,7 @@ class Menu(object):
 class MenuItem(object):
     def __init__(self, title=None, identifier=None, position=0, href=None,
      menu_id=None, _root_item=False, always_expanded=False, hidden=False,
-     parent=None, activates_parent=False):
+     parent=None, activates_parent=False, accepted_args=[], default_args={}):
         self.title = title
         self.identifier = identifier
         self.position = position
@@ -47,6 +53,8 @@ class MenuItem(object):
         self.hidden = hidden
         self.parent = parent
         self.activates_parent = activates_parent
+        self._accepted_args = accepted_args
+        self.default_args = default_args
 
 
     def is_active(self):
@@ -69,8 +77,15 @@ class MenuItem(object):
         kw = {}
         if hasattr(g, '_menu_kwargs'):
             kw = g._menu_kwargs
-        return url_for(self.href, **kw)
 
+        # Filter out kwargs which the function does not take
+        kw = {key:kw[key] for key in kw if key in self._accepted_args}
+        kw.update(self.default_args)
+        try:
+            return url_for(self.href, **kw)
+        except Exception:
+            return None
+        
     def register_child(self, item):
         if type(item) != MenuItem:
             raise Exception("Expected item to be of type 'MenuItem'. "\
@@ -138,6 +153,8 @@ class MenuFlaskView(FlaskView):
         Currently there is no context_preprocessor available for 
         FlaskView's, so this is as good as it gets.
         """
+        print(kwargs)
+
         g._menu_kwargs = kwargs
         current_app.jinja_env.globals['menu_items'] = self._menu_items
         if hasattr(self, '_root_item'):
@@ -146,8 +163,13 @@ class MenuFlaskView(FlaskView):
 
 def menu_item(title='', identifier=None, position=10, menu_id=None, 
     root_item=False, always_expanded=False, hidden=False, 
-    parent=None, activates_parent=False):
+    parent=None, activates_parent=False, default_args={},
+    accepted_args=None):
     def decorator(f):
+        _accepted_args = accepted_args
+        if not accepted_args:
+            _accepted_args = inspect.getargspec(f)[0]
+        
         _parent = None
         if parent:
             _parent = parent._menu_item
@@ -161,7 +183,9 @@ def menu_item(title='', identifier=None, position=10, menu_id=None,
             always_expanded=always_expanded,
             parent=_parent,
             hidden=hidden,
-            activates_parent=activates_parent
+            activates_parent=activates_parent,
+            accepted_args=_accepted_args,
+            default_args=default_args
         )
         if _parent:
             _parent.register_child(item)
@@ -171,9 +195,12 @@ def menu_item(title='', identifier=None, position=10, menu_id=None,
         return f
     return decorator
 
-def activates(func):
+def activates(func, default_args={}):
     def decorator(f):
-        @menu_item(hidden=True, parent=func, activates_parent=True)
+        accepted_args = inspect.getargspec(f)[0]
+        
+        @menu_item(hidden=True, parent=func, activates_parent=True, 
+            accepted_args=accepted_args, default_args=default_args)
         @wraps(f)
         def fc(*args, **kwargs):
             return f(*args, **kwargs)
