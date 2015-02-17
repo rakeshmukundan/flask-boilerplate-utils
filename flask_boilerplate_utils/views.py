@@ -1,6 +1,6 @@
 from flask.ext.classy import FlaskView
 from flask import g, url_for, request, current_app
-
+from functools import wraps
 class MenuManager(object):
     def __init__(self):
         self._menus = {}
@@ -23,7 +23,8 @@ class Menu(object):
 
     def register_item(self, item):
         if type(item) != MenuItem:
-            raise Exception("Expected item to be of type 'MenuItem'. Got '{}'.".format(type(item)))
+            raise Exception("Expected item to be of type 'MenuItem'. Got"\
+                " '{}'.".format(type(item)))
 
         self.items.append(item)
         self.items.sort(key=lambda x: x.position)
@@ -33,27 +34,36 @@ class Menu(object):
 
 class MenuItem(object):
     def __init__(self, title=None, identifier=None, position=0, href=None,
-     menu_id=None, _root_item=False, always_expanded=False):
+     menu_id=None, _root_item=False, always_expanded=False, hidden=False,
+     parent=None, activates_parent=False):
         self.title = title
         self.identifier = identifier
         self.position = position
         self.href = href
         self.menu_id = menu_id
-        self.children = []
+        self._children = []
         self._root_item = _root_item
         self.always_expanded = always_expanded
+        self.hidden = hidden
+        self.parent = parent
+        self.activates_parent = activates_parent
+
 
     def is_active(self):
         """
-        Helper method for determining whether or not a menui tem is currently active
+        Helper method for determining whether or not a menui tem is 
+        currently active
         """
-        return self.url() == request.path
+        return self.url() == request.path or any(
+            [child.is_active() for child in \
+            self._children if child.activates_parent])
 
     def child_is_active(self):
-        return any([x.is_active() for x in self.children]) 
+        return any([x.is_active() for x in self._children]) 
 
     def should_show_children(self):
-        return self.always_expanded or self.child_is_active() or self.is_active()
+        return self.always_expanded or \
+        self.child_is_active() or self.is_active()
 
     def url(self, **kwargs):
         kw = {}
@@ -63,13 +73,18 @@ class MenuItem(object):
 
     def register_child(self, item):
         if type(item) != MenuItem:
-            raise Exception("Expected item to be of type 'MenuItem'. Got '{}'.".format(type(item)))
+            raise Exception("Expected item to be of type 'MenuItem'. "\
+                "Got '{}'.".format(type(item)))
 
-        self.children.append(item)
-        self.children.sort(key=lambda x: x.position)
+        self._children.append(item)
+        self._children.sort(key=lambda x: x.position)
 
     def has_children(self):
-        return bool(len(self.children)) 
+        return bool(len(self._children))
+
+    @property
+    def children(self):
+        return [item for item in self._children if not item.hidden]
 
 class MenuFlaskView(FlaskView):
     @classmethod
@@ -82,47 +97,40 @@ class MenuFlaskView(FlaskView):
         """
 
         super(__class__, cls).register(app)
-        has_root = False
-        if hasattr(cls, '_menu_items'):
-            # The class was wrapped, as a root element.
-            # Add children
-            cls._root_item = cls._menu_items[0]
-            has_root = True
 
-        found_root_view = False
         cls._menu_items = []
+        has_root = False
+        found_root_view = False
+
+        if hasattr(cls, '_menu_item'):
+            has_root = True
+            if hasattr(app, 'menu_manager'):
+                menu = app.menu_manager.get_menu(cls._menu_item.menu_id)
+                menu.register_item(cls._menu_item)
+
         for meth_str in dir(cls):
             meth = getattr(cls, meth_str)
-            if hasattr(meth, '_menu_items'):
-                href = '{}:{}'.format(cls.__name__, meth.__name__)
-                for menu_item in meth._menu_items:
-                    menu_item.href = href
+            if hasattr(meth, '_menu_item'):
+                menu_item = meth._menu_item
+                menu_item.href = '{}:{}'.format(cls.__name__, meth.__name__)
 
-                    if has_root and menu_item._root_item:
-                        found_root_view = True
-                        menu_item.menu_id = cls._root_item.menu_id
-                        menu_item.position = cls._root_item.position
-                        menu_item.children = cls._root_item.children
-                        menu_item.always_expanded = cls._root_item.always_expanded
-                        cls._root_item = menu_item
-                    else:
+                if has_root and menu_item._root_item:
+                    found_root_view = True
+                    cls._menu_item.href = menu_item.href
+                    cls._menu_item.title = menu_item.title
+                    cls._menu_item.identifier = menu_item.identifier
+
+                else:
+                    if not menu_item.parent:
                         cls._menu_items.append(menu_item)
                         if has_root:
-                            cls._root_item.register_child(menu_item)
+                            cls._menu_item.register_child(menu_item)
                         elif menu_item.menu_id:
                             menu = app.menu_manager.get_menu(menu_item.menu_id)
                             menu.register_item(menu_item)
 
-        if has_root and not found_root_view:
-            raise Exception('Could not find a root item for {}\' upper menu'\
-                ' item.'.format(cls))
-
         cls._menu_items.sort(key=lambda x: x.position)
-
-        if has_root and hasattr(app, 'menu_manager'):
-            menu = app.menu_manager.get_menu(cls._root_item.menu_id)
-            menu.register_item(cls._root_item)
-
+        
 
     def before_request(self, name, **kwargs):
         """
@@ -133,21 +141,41 @@ class MenuFlaskView(FlaskView):
         g._menu_kwargs = kwargs
         current_app.jinja_env.globals['menu_items'] = self._menu_items
         if hasattr(self, '_root_item'):
-            current_app.jinja_env.globals['section_menu_items'] = self._root_item.children
+            current_app.jinja_env.globals['section_menu_items'] = \
+            self._root_item.children
 
-def menu_item(title='', identifier=None, position=10, menu_id=None, root_item=False, always_expanded=False):
+def menu_item(title='', identifier=None, position=10, menu_id=None, 
+    root_item=False, always_expanded=False, hidden=False, 
+    parent=None, activates_parent=False):
     def decorator(f):
+        _parent = None
+        if parent:
+            _parent = parent._menu_item
+
         item = MenuItem(
             title=title,
             identifier=identifier,
             position=position,
             menu_id=menu_id,
             _root_item=root_item,
-            always_expanded=always_expanded
+            always_expanded=always_expanded,
+            parent=_parent,
+            hidden=hidden,
+            activates_parent=activates_parent
         )
-        if not hasattr(f, '_menu_items') or f._menu_items is None:
-            f._menu_items = [item]
-        else:
-            f._menu_items.append(item)
+        if _parent:
+            _parent.register_child(item)
+
+        f._menu_item = item
+
         return f
     return decorator
+
+def activates(func):
+    def decorator(f):
+        @menu_item(hidden=True, parent=func, activates_parent=True)
+        @wraps(f)
+        def fc(*args, **kwargs):
+            return f(*args, **kwargs)
+        return fc
+    return decorator  
