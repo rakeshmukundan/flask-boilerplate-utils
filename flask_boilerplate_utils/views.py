@@ -153,8 +153,6 @@ class MenuFlaskView(FlaskView):
         Currently there is no context_preprocessor available for 
         FlaskView's, so this is as good as it gets.
         """
-        print(kwargs)
-
         g._menu_kwargs = kwargs
         current_app.jinja_env.globals['menu_items'] = self._menu_items
         if hasattr(self, '_root_item'):
