@@ -75,7 +75,11 @@
                             {% if 'placeholder' in kwargs %}
                                 title="{{ kwargs['placeholder'] }}"
                             {% endif %}
-                        {% endif %}>
+                        {% endif %}
+                        {% for arg in kwargs -%}
+                            {{arg}}='{{kwargs[arg]}}' 
+                        {%- endfor %}
+                        >
                             {% if 'placeholder' in kwargs and field.type in ['SelectField','QuerySelectField'] %}
                                 <option>{{kwargs['placeholder'] }}</option>                    
                             {% endif %}
