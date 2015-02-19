@@ -1,5 +1,7 @@
 from wtforms.validators import Optional, ValidationError, StopValidation
+from wtforms import DateTimeField
 import os
+import datetime
 
 class ValidFileFormat(Optional):
     """
@@ -81,10 +83,83 @@ class OptionalFileField(Optional):
         if field.data.filename == '':
             raise StopValidation()
 
+class RequireAny(object):
+    """
+    Raise a Validation Error on the active field if none of the passed
+    fields have data.
+    """
+    def __init__(self, fields, message, errors_on_all=True):
+        """
+        :param fields: A list of (string) fields on the Form class to be 
+                       included. 
+        :param message: The message to show to the user upon failure
+        :param errors_on_all: Show the error message on all the specified fields
+        """
+        self.fields = fields
+        self.message = message
+        self.errors_on_all = errors_on_all
+
+    def __call__(self, form, field):
+        if field.data:
+            return True
+
+        for fieldname in self.fields:
+            field = getattr(form, fieldname)
+            print(field.data)
+            if field.data:
+                return True
+            elif self.errors_on_all:
+                field.errors.append(self.message)
+
+        raise ValidationError(self.message)
+
 
 def empty_string_none(string):
     """
     A Wtforms filter which will turn an empty string into a Nonetype.
     """
     return string or None
+
+
+
+class TimezoneDateTimeField(DateTimeField):
+    """
+    A Timezone aware field for WTForms. 
+    Define a field in your form and declare it with tzfield='variable_name'
+    The timezone field on the client should have the value of:
+        new Date().getTimezoneOffset();
+
+    This is a offset in minutes from UTC. (-ve means ahead of UTC, 
+    +ve means behind UTC)
+    """
+
+    def __init__(self, label=None, validators=None, tzfield=None, format='%Y-%m-%d %H:%M:%S' ,**kwargs):
+        self.format = format
+        self.tzfield = tzfield
+        self._form = kwargs.get('_form')
+
+        super(TimezoneDateTimeField, self).__init__(label, validators, format, **kwargs)
+
+    def process_formdata(self, valuelist):
+        print("PROCESSING FORM DATA")
+        
+        if valuelist:
+            format = self.format
+            date_str = ' '.join(valuelist)
+
+            if self.tzfield:
+                format = self.format + ' %z'
+                tzoffset = int(getattr(self._form, self.tzfield).data) * -1
+                tz = "{0:+02d}{1:02d}".format(int(tzoffset/60), tzoffset % 60)
+                date_str = date_str + ' {}'.format(tz)
+
+                print(format)
+                print(date_str)
+
+            try:
+                self.data = datetime.datetime.strptime(date_str, format)
+            except ValueError:
+                self.data = None
+                raise ValueError(self.gettext('Not a valid datetime value'))
+
 
