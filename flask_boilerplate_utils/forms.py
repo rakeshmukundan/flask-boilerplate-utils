@@ -80,3 +80,11 @@ class OptionalFileField(Optional):
     def __call__(self, form, field):
         if field.data.filename == '':
             raise StopValidation()
+
+
+def empty_string_none(string):
+    """
+    A Wtforms filter which will turn an empty string into a Nonetype.
+    """
+    return string or None
+
