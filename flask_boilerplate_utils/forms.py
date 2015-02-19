@@ -87,14 +87,14 @@ class RequireAny(object):
     """
     Raise a Validation Error on the active field if none of the passed
     fields have data.
+
+    :param fields: A list of (string) fields on the Form class to be 
+                   included. 
+    :param message: The message to show to the user upon failure
+    :param errors_on_all: Show the error message on all the specified fields
     """
     def __init__(self, fields, message, errors_on_all=True):
-        """
-        :param fields: A list of (string) fields on the Form class to be 
-                       included. 
-        :param message: The message to show to the user upon failure
-        :param errors_on_all: Show the error message on all the specified fields
-        """
+
         self.fields = fields
         self.message = message
         self.errors_on_all = errors_on_all
@@ -131,6 +131,9 @@ class TimezoneDateTimeField(DateTimeField):
 
     This is a offset in minutes from UTC. (-ve means ahead of UTC, 
     +ve means behind UTC)
+
+    :param tzfield: The name (as a string) of the variable which containes the 
+                    getTimezoneOffset() value.
     """
 
     def __init__(self, label=None, validators=None, tzfield=None, format='%Y-%m-%d %H:%M:%S' ,**kwargs):
