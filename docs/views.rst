@@ -1,6 +1,6 @@
 .. commands:
 
-Reverse Proxy Tools
+Flask-Classy Helpers & Utilities
 ===================================================
 
 
