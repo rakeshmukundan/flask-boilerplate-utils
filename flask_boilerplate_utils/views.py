@@ -129,8 +129,6 @@ class MenuItem(object):
         return bool(len(self._children))
 
     def hidden_lambda(self):
-        print(self.title)
-        print (self._hidden_lambda)
         if self._hidden_lambda:
             return self._hidden_lambda()
         return False
