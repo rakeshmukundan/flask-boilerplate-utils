@@ -172,7 +172,16 @@ class MenuFlaskView(FlaskView):
                     cls._menu_item.href = menu_item.href
                     cls._menu_item.title = menu_item.title
                     cls._menu_item.identifier = menu_item.identifier
-                    cls._menu_item._hidden_lambda = menu_item._hidden_lambda
+                    cls._menu_item._children = menu_item._children
+                    if cls._menu_item._hidden_lambda and menu_item._hidden_lambda:
+                        raise Exception("Root menu item for class {}'s "\
+                            "hidden_lambda is"\
+                            " being overridden. Either set the hidden_lambda "\
+                            "on the root item or the chosen root item. not "\
+                            "both.".format(cls.__name__))
+
+                    if not cls._menu_item._hidden_lambda:
+                        cls._menu_item._hidden_lambda = menu_item._hidden_lambda
 
                 else:
                     if not menu_item.parent:
