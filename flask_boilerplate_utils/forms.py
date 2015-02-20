@@ -3,6 +3,25 @@ from wtforms import DateTimeField
 import os
 import datetime
 
+class RequireItemAsMember(object):
+    """
+    Ignores validation if a file is not provided.
+    :param item: The item to check if that form data contains.
+    :param message: The message to show upon error
+    :throws ValidationError: ValidationError if the current user
+                             is not in the data
+    """
+    def __init__(self, item, 
+        message='A required item did not exist in your selection'):
+        self.message = message
+        self.item = item
+
+    def __call__(self, form, field):
+        if not self.item in field.data:
+            raise ValidationError(self.message)
+
+
+
 class ValidFileFormat(Optional):
     """
     Determines whether or not a file is valid for uploading

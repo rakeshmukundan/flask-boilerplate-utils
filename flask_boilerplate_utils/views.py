@@ -49,12 +49,14 @@ class Menu(object):
         """
         Iterate over the menu's items.
         """
-        return self.items.__iter__()
+        items = [item for item in self.items if not (item.hidden or item.hidden_lambda())]
+        return items.__iter__()
 
 class MenuItem(object):
     def __init__(self, title=None, identifier=None, position=0, href=None,
      menu_id=None, _root_item=False, always_expanded=False, hidden=False,
-     parent=None, activates_parent=False, accepted_args=[], default_args={}):
+     parent=None, activates_parent=False, accepted_args=[], default_args={},
+     hidden_lambda=None):
         self.title = title
         self.identifier = identifier
         self.position = position
@@ -68,7 +70,7 @@ class MenuItem(object):
         self.activates_parent = activates_parent
         self._accepted_args = accepted_args
         self.default_args = default_args
-
+        self._hidden_lambda = hidden_lambda
 
     def is_active(self):
         """
@@ -126,9 +128,16 @@ class MenuItem(object):
         """
         return bool(len(self._children))
 
+    def hidden_lambda(self):
+        print(self.title)
+        print (self._hidden_lambda)
+        if self._hidden_lambda:
+            return self._hidden_lambda()
+        return False
+
     @property
     def children(self):
-        return [item for item in self._children if not item.hidden]
+        return [item for item in self._children if not (item.hidden or item.hidden_lambda())]
 
 class MenuFlaskView(FlaskView):
     """
@@ -165,6 +174,7 @@ class MenuFlaskView(FlaskView):
                     cls._menu_item.href = menu_item.href
                     cls._menu_item.title = menu_item.title
                     cls._menu_item.identifier = menu_item.identifier
+                    cls._menu_item._hidden_lambda = menu_item._hidden_lambda
 
                 else:
                     if not menu_item.parent:
@@ -197,7 +207,7 @@ class MenuFlaskView(FlaskView):
 def menu_item(title='', identifier=None, position=10, menu_id=None, 
     root_item=False, always_expanded=False, hidden=False, 
     parent=None, activates_parent=False, default_args={},
-    accepted_args=None):
+    accepted_args=None, hidden_lambda=None):
     
     """
     Decorator for defining a menu item.
@@ -228,7 +238,12 @@ def menu_item(title='', identifier=None, position=10, menu_id=None,
                           If not defined, the names of kwargs for the method 
                           are used.
 
-    
+    :param hidden_lambda: Define a lambda function to show/hide this item
+                          dynamically. Useful if you want to hide items for
+                          users who do not have apropriate permissions to the
+                          view
+
+                          If the lambda results True, the item will be hidden.
     """
     def decorator(f):
         _accepted_args = accepted_args
@@ -250,7 +265,8 @@ def menu_item(title='', identifier=None, position=10, menu_id=None,
             hidden=hidden,
             activates_parent=activates_parent,
             accepted_args=_accepted_args,
-            default_args=default_args
+            default_args=default_args,
+            hidden_lambda=hidden_lambda
         )
         if _parent:
             _parent.register_child(item)
@@ -260,7 +276,7 @@ def menu_item(title='', identifier=None, position=10, menu_id=None,
         return f
     return decorator
 
-def activates(func, default_args={}):
+def activates(func, *args, **kwargs):
     """
     Decorator for defining a child menu item and automatically activating
     it's parent and setting it hidden. 
@@ -268,12 +284,11 @@ def activates(func, default_args={}):
     Simply a convenience decorator for @menu_item.
     """
 
-
     def decorator(f):
         accepted_args = inspect.getargspec(f)[0]
         
         @menu_item(hidden=True, parent=func, activates_parent=True, 
-            accepted_args=accepted_args, default_args=default_args)
+            accepted_args=accepted_args, *args,**kwargs)
         @wraps(f)
         def fc(*args, **kwargs):
             return f(*args, **kwargs)
