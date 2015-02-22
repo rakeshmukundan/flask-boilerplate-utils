@@ -206,10 +206,23 @@ class MenuFlaskView(FlaskView):
         section_menu_items for scoping. 
         """
         g._menu_kwargs = kwargs
-        current_app.jinja_env.globals['menu_items'] = self._menu_items
+        current_app.jinja_env.globals['menu_items'] = self.menu_items()
         if hasattr(self, '_root_item'):
             current_app.jinja_env.globals['section_menu_items'] = \
             self._root_item.children
+
+    def menu_items(self, filtered=True):
+        """
+        Return a list of menu items.
+        :param filtered: Whether or not to filter out hidden top level items 
+        """
+        if not filtered:
+            return self._menu_items
+
+        return [item for item in self._menu_items if not\
+        (item.hidden or item.hidden_lambda())]
+
+
 
 def menu_item(title='', identifier=None, position=10, menu_id=None, 
     root_item=False, always_expanded=False, hidden=False, 
