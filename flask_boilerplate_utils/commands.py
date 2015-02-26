@@ -8,7 +8,7 @@ from urllib.request import urlopen
 
 
 # Manager Factory.
-def MainManager(app, **kwargs):
+def MainManager(app, tests_module=None, **kwargs):
     """
     A factory which creates a flask-script manager and configure it for use
     with the boilerplate. 
@@ -22,6 +22,11 @@ def MainManager(app, **kwargs):
     manager.add_command('meinheld', Host(app))
     manager.add_command('install', InstallFramework(app))
     manager.add_command('import', Import(app))
+    if tests_module:
+        tests_command = Test(app)
+        tests_command.tests_module = tests_module
+        manager.add_command('test', tests_command)
+
     return manager
 
 
@@ -59,6 +64,13 @@ class Run(BaseCommand):
             hostname = '0.0.0.0'
 
         self.app.run(debug=debug, host=hostname, port=port)
+
+class Test(BaseCommand):
+    def run(self, **kwargs):
+        import unittest
+        suite = unittest.TestLoader().loadTestsFromModule(self.tests_module)
+        unittest.TextTestRunner(verbosity=2).run(suite)
+
 
 class Import(BaseCommand):
     def run(self):
