@@ -47,17 +47,21 @@ class Run(BaseCommand):
     "Run the Flask Builtin Server (Not for production)"
 
     option_list = (
-        Option('--hostname', '-h', dest='hostname', default='0.0.0.0', type=str),
+        Option('--hostname', '-h', dest='hostname', default=None, type=str),
         Option('--port', '-p', dest='port', default=None, type=int),
         Option('--no-debug', '-n', dest='debug', default=True, action='store_false'),       
     ) + BaseCommand.option_list
 
     def run(self, port, hostname, debug, config, **kwargs):
-        if port is None and 'LISTEN_PORT' in self.app.config:
-            port = self.app.config['LISTEN_PORT']
+        if port is None:
+            port = 8000
+            if 'LISTEN_PORT' in self.app.config:
+                port = self.app.config['LISTEN_PORT']
 
-        if hostname is None and 'LISTEN_HOST' in self.app.config:
-            hostname = self.app.config['LISTEN_HOST']
+        if hostname is None:
+            hostname = '0.0.0.0'
+            if 'LISTEN_HOST' in self.app.config:
+                hostname = self.app.config['LISTEN_HOST']
 
         self.app.run(debug=debug, host=hostname, port=port)
 
@@ -82,11 +86,15 @@ class Host(BaseCommand):
         Option('--port', '-p', dest='port', default=8000, type=int),
     ) + BaseCommand.option_list
     def run(self, port, hostname, **kwargs):
-        if port is None and 'LISTEN_PORT' in self.app.config:
-            port = self.app.config['LISTEN_PORT']
+        if port is None:
+            port = 8000
+            if 'LISTEN_PORT' in self.app.config:
+                port = self.app.config['LISTEN_PORT']
 
-        if hostname is None and 'LISTEN_HOST' in self.app.config:
-            hostname = self.app.config['LISTEN_HOST']
+        if hostname is None:
+            hostname = '0.0.0.0'
+            if 'LISTEN_HOST' in self.app.config:
+                hostname = self.app.config['LISTEN_HOST']
 
         from meinheld import server, patch
         patch.patch_all()
