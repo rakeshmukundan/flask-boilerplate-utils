@@ -3,6 +3,19 @@ from flask import g, url_for, request, current_app
 from functools import wraps
 import inspect
 
+def init_menu(blueprint):
+    """
+    Register a blueprint for use with a menu manager.
+    
+    Args:
+        blueprint (flask.Blueprint): Register a menu manager on a blueprint.
+    """
+    blueprint.menu_manager = MenuManager()
+    @blueprint.context_processor
+    def processor():
+        return dict(
+            menus=blueprint.menu_manager.menus
+        )
 
 class MenuManager(object):
     """
@@ -107,7 +120,7 @@ class MenuItem(object):
         kw = {key:kw[key] for key in kw if key in self._accepted_args}
         kw.update(self.default_args)
         try:
-            return url_for(self.href, **kw)
+            return url_for('.' + self.href, **kw)
         except Exception:
             return None
         
