@@ -58,6 +58,8 @@ class Boilerplate(object):
         if csrf_enabled:
             from flask_wtf.csrf import CsrfProtect
             app.csrf = CsrfProtect(app)
+            app.config['CSRF_ENABLED'] = True
+
 
         if behind_reverse_proxy:
             from .ReverseProxied import ReverseProxied

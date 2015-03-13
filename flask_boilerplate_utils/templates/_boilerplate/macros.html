@@ -108,6 +108,7 @@
 {% endmacro %}
 
 {% macro csrf_setup() %}
+    {% if config.CSRF_ENABLED %}
     <script>
     var csrftoken = "{{ csrf_token() }}"
 
@@ -119,5 +120,6 @@
         }
     });
     </script>
+    {% endif %}
 {% endmacro %}
 
