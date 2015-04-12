@@ -1,85 +1,60 @@
 from flask import Blueprint
 from .jinja_globals import render_field, csrf_setup
-from .filters import (
-    timesince,
-    local_date,
-    percent_escape,
-    local_date_time,
-    get_autoincluded_assets
-)
-from flask.ext.babel import Babel
-
-
+from .filters import timesince, percent_escape
+from .overrides import FlaskView
 class Boilerplate(object):
-    """
-    Configure the App with the standard boilerplate
-    configuration.
 
-    :param app: the Flask Applciation
-    :param csrf_enabled: A boolean determining whether or not
-                         flask_wtf CSRF protection should
-                         be enabled.
-    :param use_sentry: A boolean determining whether or not
-                       Sentry should be used within the 
-                       production environment.
-    """
+    def __init__(self, app=None):
+        if app is not None:
+            self.init_app(app)
 
-    def __init__(self, app=None, **kwargs):
+    def init_app(self, app):
+
         self.app = app
 
-        if app is not None:
-            self._state = self.init_app(app, **kwargs)
+        app.config.setdefault('CSRF_ENABLED', True)
+        app.config.setdefault('SENTRY_ENABLED', False)
+        app.config.setdefault('BEHIND_REVERSE_PROXY', False)
+        app.config.setdefault('REDIS_SESSIONS_ENABLED', False)
+        app.config.setdefault('REDIS_SESSIONS_DB', 1)
+        app.config.setdefault('BABEL_ENABLED', False)
+        
 
-    def init_app(self, app, csrf_enabled=True,
-        use_sentry=True, with_html_assets=True,
-        with_menu_manager=False,
-        with_redis_sessions=False,
-        redis_db_number=1,
-        behind_reverse_proxy=False):
-        bp = Blueprint(
-            'boilerplate',
-            __name__,
-            template_folder='templates',
-            url_prefix='/bp',
-        )
+        bp = Blueprint('boilerplate', __name__, template_folder='templates')
+        self.app.register_blueprint(bp)
 
-        app.register_blueprint(bp)
+        # Inject various globals into jinja
         app.jinja_env.globals['csrf_setup'] = csrf_setup
         app.jinja_env.globals['render_field'] = render_field
-        if with_html_assets:
-            app.jinja_env.globals['html_assets'] = get_autoincluded_assets(app)()
-        app.jinja_env.filters['local_date'] = local_date
-        app.jinja_env.filters['local_date_time'] = local_date_time
         app.jinja_env.filters['percent_escape'] = percent_escape
         app.jinja_env.filters['time_since'] = timesince
 
-        app.babel = Babel(app)
 
-        if csrf_enabled:
+        if app.config.get('CSRF_ENABLED'):
             from flask_wtf.csrf import CsrfProtect
             app.csrf = CsrfProtect(app)
-            app.config['CSRF_ENABLED'] = True
 
 
-        if behind_reverse_proxy:
+        if app.config.get('BEHIND_REVERSE_PROXY'):
             from .ReverseProxied import ReverseProxied
             app.wsgi_app = ReverseProxied(app.wsgi_app)
 
-        # Setup App Debug via Sentry (When in production)
-        if use_sentry and not app.debug:
+
+        if app.config.get('SENTRY_ENABLED') and not app.debug:
             from raven.contrib.flask import Sentry
             app.sentry = Sentry(app)
 
-        if with_menu_manager:
-            from .views import MenuManager
-            app.menu_manager = MenuManager()
-            app.jinja_env.globals['menus'] = app.menu_manager.menus
-
-        if with_redis_sessions or app.config.get('USE_REDIS_SESSIONS', False):
+        if app.config.get('REDIS_SESSIONS_ENABLED'):
             from .RedisSessionInterface import RedisSessionInterface
             from redis import Redis
-            redis = Redis(db=redis_db_number)
+            redis = Redis(db=app.config.get('REDIS_SESSIONS_DB'))
             app.session_interface = RedisSessionInterface(redis=redis)
 
+        if app.config.get('BABEL_ENABLED'):
+            from flask.ext.babel import Babel
+            from .filters import local_date, local_date_time
+            app.babel = Babel(app)
+            app.jinja_env.filters['local_date'] = local_date
+            app.jinja_env.filters['local_date_time'] = local_date_time
 
-
+        return True
