@@ -29,7 +29,8 @@ class FlaskView(FFlaskView):
     def register(cls, app, *args, **kwargs):
         if hasattr(app, 'expected_parameters'):
             cls.ignored_rule_args = app.expected_parameters
-            return super(FlaskView, cls).register(app, *args,**kwargs)
+        
+        return super(FlaskView, cls).register(app, *args,**kwargs)
 
     @classmethod
     def build_rule(cls, rule, method=None):
