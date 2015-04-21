@@ -11,14 +11,19 @@ def MainManager(app, tests_module=None, **kwargs):
     """
 
     manager = Manager(app,**kwargs)
+    info_manager = AppInfoManager(app, **kwargs)
+    info_manager.add_command('routes', GetRoutes(app))
+
     manager.add_command('server', Run(app))
     manager.add_command('meinheld', Host(app))
+    manager.add_command('info', info_manager)
     if tests_module:
         tests_command = Test(app)
         tests_command.tests_module = tests_module
         manager.add_command('test', tests_command)
 
     return manager
+
 
 
 class BaseCommand(Command):
@@ -32,6 +37,39 @@ class BaseCommand(Command):
     def __init__(self, app):
         super(Command, self).__init__()
         self.app = app
+
+class AppInfoManager(Manager):
+    """
+    Query info about the app.
+    """
+
+class GetRoutes(BaseCommand):
+    """
+    Get all the App's routes and a presentable fashion. Good for debugging endpoints.
+    """
+    def run(self, **kwargs):
+        from flask import url_for
+        rules = []
+        largest = [0,0,0]
+
+        for rule in self.app.url_map.iter_rules():
+            if len(str(rule.endpoint)) > largest[0]:
+                largest[0] = len(rule.endpoint)
+
+            if len(str(rule.rule)) > largest[1]:
+                largest[1] = len(rule.rule)
+
+            if len(str(rule.methods)) > largest[2]:
+                largest[2] = len(rule.methods)
+
+            rules.append((str(rule.endpoint), str(rule.rule), str(rule.methods)))
+        
+
+        for endpoint, rule, methods in rules:
+            print("{}:{}:{}".format(
+                endpoint.ljust(largest[0]), 
+                rule.ljust(largest[1]), 
+                methods.ljust(largest[2])))
 
 
 class Run(BaseCommand):
