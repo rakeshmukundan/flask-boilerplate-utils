@@ -124,7 +124,6 @@ class RequireAny(object):
 
         for fieldname in self.fields:
             field = getattr(form, fieldname)
-            print(field.data)
             if field.data:
                 return True
             elif self.errors_on_all:

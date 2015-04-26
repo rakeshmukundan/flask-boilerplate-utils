@@ -25,6 +25,11 @@ import re
 
 
 class FlaskView(FFlaskView):
+    """
+    Override Flask-Classy's FlaskView to provide ignoring of kwargs when converting
+    them to a endpoint mapping. Allows blueprints to have dynamic arguments in them
+    and allow an endpoint to catch them in it's kwargs.
+    """
     @classmethod
     def register(cls, app, *args, **kwargs):
         if hasattr(app, 'expected_parameters'):

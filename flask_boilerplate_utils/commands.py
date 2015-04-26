@@ -22,6 +22,10 @@ def MainManager(app, tests_module=None, **kwargs):
         tests_command.tests_module = tests_module
         manager.add_command('test', tests_command)
 
+    if not app.config.get('IS_CLEAN', True):
+        manager.add_command('cleanup', Cleanup(app))
+
+
     return manager
 
 
@@ -94,6 +98,63 @@ class Test(BaseCommand):
         import unittest
         suite = unittest.TestLoader().loadTestsFromModule(self.tests_module)
         unittest.TextTestRunner(verbosity=2).run(suite)
+
+class Cleanup(BaseCommand):
+    """
+    Remove all submodules and cleanup the skeleton.
+    """
+
+    def run(self, **kwargs):
+        import shutil
+        print(" * Cleaning up...")
+        print(" * Unlinking Submodules")
+        kept_lines = None
+        with open('./Application/modules/frontend/__init__.py', 'r') as fh:
+            kept_lines = fh.readlines()
+
+        with open('./Application/modules/frontend/__init__.py', 'w') as fh:
+            for line in kept_lines:
+                if "Pragma - Submodule Registration Start" in line:
+                    break
+
+                fh.write(line)
+
+        print(" * Deleting Submodules")
+        shutil.rmtree('./Application/modules/frontend/modules')
+
+        print(" * Deleting Models")
+        shutil.rmtree('./libs/models/models/examples')
+
+        print(" * Updating Config")
+        kept_lines = None
+        with open('./libs/config/config/__init__.py', 'r') as fh:
+            kept_lines = fh.readlines()
+
+        with open('./libs/config/config/__init__.py', 'w') as fh:
+            for line in kept_lines:
+                if "IS_CLEAN = False" in line:
+                    continue
+
+                fh.write(line)
+
+        print(" * Cleaning Index Page")
+        kept_lines = None
+        with open('./Application/modules/frontend/templates/frontend/index.html', 'r') as fh:
+            kept_lines = fh.readlines()
+
+        with open('./Application/modules/frontend/templates/frontend/index.html', 'w') as fh:
+            ignoring = False
+            for line in kept_lines:
+                if "Pragma - Start Remove After Cleanup" in line:
+                    ignoring = True
+                if "Pragma - End Remove After Cleanup" in line:
+                    ignoring = False
+                    continue
+
+                if not ignoring:
+                    fh.write(line)
+
+        print(" * Cleanup Complete!")
 
 class Host(BaseCommand):
     """
