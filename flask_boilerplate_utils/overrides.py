@@ -1,4 +1,41 @@
-from flask import Blueprint
+from flask import Blueprint, request
+from flask import render_template as _render_template
+
+def render_template(filename, *args, **kwargs):
+    """Blueprint Patched render_template. 
+
+    If a filename is passed starting with '.', the current blueprint will
+    be prepended plus an additional slash.
+
+    This allows using duplicate filenames without worrying about rendering
+    the wrong file.
+
+    Example:
+
+        .index.html will be converted into: <current_blueprint>/index.html
+
+    """
+
+    if filename.startswith('.'):
+            if request.blueprint:
+                # Filename started with ., expecting a blueprint relative path.
+                filename = request.blueprint + "/" + filename[1:]
+            else:
+                # No blueprint found. Assuming this was a mistake.
+                filename = filename[1:]
+
+    return _render_template(filename, *args, **kwargs)
+
+
+def monkey_patch_all():
+    """Inject all boilerplate monkey patches for Flask.
+
+    Overrides render_template: If a render_template is passed a filename
+    starting with '.', the blueprint name + / will be prepended to the path.
+    """
+
+    import flask
+    flask.render_template = render_template
 
 class NestableBlueprint(Blueprint):
     """
