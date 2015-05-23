@@ -1,12 +1,15 @@
 from datetime import datetime
-from urllib.parse import quote
+
+try:
+    from urllib.parse import quote
+except ImportError:
+    from urllib import quote
 
 def timesince(dt, default="Just now."):
     """
     Returns a string representing "time since" e.g.
     3 days ago, 5 hours ago etc.
     """
-
     now = datetime.now()
     diff = now - dt
     
