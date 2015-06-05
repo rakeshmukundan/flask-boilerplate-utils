@@ -1,28 +1,40 @@
 from flask import render_template_string, Markup
+from .wtforms_widgets.bootstrap.generic import default_widgets, BPWidgetMixin
 
 def render_field(field, **kwargs):
     """
     Returns a rendered field using the boilerplate's field renderer.
 
     :param field: A wtforms.field to render
-    :param kwargs: Keyword arguments to send to the render macro. allows 
-                   renderer configuration when calling this global within 
-                   a template.
+    :param kwargs: Arguments to render with.
     """
 
-    template = """
-    {% from '_boilerplate/macros.html' import render_field %}
-    {{ render_field(field, **kwargs) }}
-    """
-    return Markup(render_template_string(template, field=field, kwargs=kwargs))
+    if not (isinstance(field.widget, BPWidgetMixin)):
+        #  Does not have a widget. 
+        #  Assign it one
+        if field.type in default_widgets:
+            field.widget = default_widgets[field.type]
+
+    return field(**kwargs)
+
 
 def csrf_setup(**kwargs):
     """
     Return the CSRF setup global for injection into jinja templates.
     """
-
     template = """
-    {% from '_boilerplate/macros.html' import csrf_setup %}
-    {{ csrf_setup(**kwargs) }}
+    {% if config.CSRF_ENABLED %}
+    <script>
+    var csrftoken = "{{ csrf_token() }}"
+
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken)
+            }
+        }
+    });
+    </script>
+    {% endif %}
     """
-    return Markup(render_template_string(template, kwargs=kwargs))
+    return Markup(render_template_string(template, **kwargs))

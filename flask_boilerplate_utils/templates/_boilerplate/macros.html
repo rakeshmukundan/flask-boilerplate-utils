@@ -17,7 +17,8 @@
 {% endmacro %}
 
 {# Render Field Macro for WTForms (Bootstrap Compat) #}
-{% macro render_field(field) %}
+{% macro render_field_old(field) %}
+    {{ field.__dict__ }}
     {% if field.type == 'SubmitField' %}
         {{ field(class_='btn btn-default', **kwargs)|safe }}
     {% else %}
@@ -104,22 +105,6 @@
             {{ render_field_description(field) }}
 
         </div>
-    {% endif %}
-{% endmacro %}
-
-{% macro csrf_setup() %}
-    {% if config.CSRF_ENABLED %}
-    <script>
-    var csrftoken = "{{ csrf_token() }}"
-
-    $.ajaxSetup({
-        beforeSend: function(xhr, settings) {
-            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
-                xhr.setRequestHeader("X-CSRFToken", csrftoken)
-            }
-        }
-    });
-    </script>
     {% endif %}
 {% endmacro %}
 
