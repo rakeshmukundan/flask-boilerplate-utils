@@ -34,6 +34,7 @@ setup(
     "flask-babel",
     "flask-script",
     "meinheld",
-    "flask-classy"
+    "flask-classy",
+    "wtforms-webwidgets"
   ],
 )

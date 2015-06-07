@@ -3,6 +3,11 @@ from wtforms import DateTimeField
 import os
 import datetime
 
+
+# TODO: RenderErrorsForOtherField validator.
+#       Make a validator that masks errors into 
+#       a single field. Good for usernames/pw.
+
 class RequireItemAsMember(object):
     """
     Ignores validation if a file is not provided.

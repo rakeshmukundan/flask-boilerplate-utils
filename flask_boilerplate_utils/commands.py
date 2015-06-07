@@ -25,10 +25,7 @@ def MainManager(app, tests_module=None, **kwargs):
     if not app.config.get('IS_CLEAN', True):
         manager.add_command('cleanup', Cleanup(app))
 
-
     return manager
-
-
 
 class BaseCommand(Command):
     """

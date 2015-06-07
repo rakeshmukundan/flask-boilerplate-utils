@@ -1,5 +1,8 @@
 from flask import render_template_string, Markup
-from .wtforms_widgets.bootstrap.generic import default_widgets, BPWidgetMixin
+
+from wtforms_webwidgets.bootstrap import default_widgets
+from wtforms_webwidgets import CustomWidgetMixin
+
 
 def render_field(field, **kwargs):
     """
@@ -9,7 +12,7 @@ def render_field(field, **kwargs):
     :param kwargs: Arguments to render with.
     """
 
-    if not (isinstance(field.widget, BPWidgetMixin)):
+    if not (isinstance(field.widget, CustomWidgetMixin)):
         #  Does not have a widget. 
         #  Assign it one
         if field.type in default_widgets:
