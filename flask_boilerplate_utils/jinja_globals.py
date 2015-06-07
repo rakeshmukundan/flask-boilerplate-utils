@@ -1,8 +1,9 @@
 from flask import render_template_string, Markup
 
 from wtforms_webwidgets.bootstrap import default_widgets
-from wtforms_webwidgets import CustomWidgetMixin
+from wtforms_webwidgets import FieldRenderer
 
+renderer = FieldRenderer(default_widgets)
 
 def render_field(field, **kwargs):
     """
@@ -11,14 +12,7 @@ def render_field(field, **kwargs):
     :param field: A wtforms.field to render
     :param kwargs: Arguments to render with.
     """
-
-    if not (isinstance(field.widget, CustomWidgetMixin)):
-        #  Does not have a widget. 
-        #  Assign it one
-        if field.type in default_widgets:
-            field.widget = default_widgets[field.type]
-
-    return field(**kwargs)
+    return renderer(field)
 
 
 def csrf_setup(**kwargs):
