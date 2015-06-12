@@ -12,7 +12,7 @@ def render_field(field, **kwargs):
     :param field: A wtforms.field to render
     :param kwargs: Arguments to render with.
     """
-    return renderer(field)
+    return renderer(field, **kwargs)
 
 
 def csrf_setup(**kwargs):
