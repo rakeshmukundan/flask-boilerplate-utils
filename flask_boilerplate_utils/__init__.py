@@ -17,7 +17,10 @@ class Boilerplate(object):
         app.config.setdefault('BEHIND_REVERSE_PROXY', False)
         app.config.setdefault('REDIS_SESSIONS_ENABLED', False)
         app.config.setdefault('REDIS_SESSIONS_DB', 1)
+        app.config.setdefault('REDIS_SESSIONS_HOST', '127.0.0.1')
+        app.config.setdefault('REDIS_SESSIONS_PORT', 6379)
         app.config.setdefault('BABEL_ENABLED', False)
+
         
 
         bp = Blueprint('boilerplate', __name__, template_folder='templates')
@@ -47,7 +50,13 @@ class Boilerplate(object):
         if app.config.get('REDIS_SESSIONS_ENABLED'):
             from .RedisSessionInterface import RedisSessionInterface
             from redis import Redis
-            redis = Redis(db=app.config.get('REDIS_SESSIONS_DB'))
+
+
+            redis = Redis(
+                host=app.config.get('REDIS_SESSIONS_HOST'),
+                port=app.config.get('REDIS_SESSIONS_PORT'),
+                db=app.config.get('REDIS_SESSIONS_DB')
+            )
             app.session_interface = RedisSessionInterface(redis=redis)
 
         if app.config.get('BABEL_ENABLED'):
