@@ -8,13 +8,14 @@ from flask.sessions import SessionInterface, SessionMixin
 
 class RedisSession(CallbackDict, SessionMixin):
 
-    def __init__(self, initial=None, sid=None, new=False):
+    def __init__(self, initial=None, sid=None, new=False, pickle_protocol=None):
         def on_update(self):
             self.modified = True
         CallbackDict.__init__(self, initial, on_update)
         self.sid = sid
         self.new = new
         self.modified = False
+        self.pickle_protocol = pickle_protocol
 
 
 class RedisSessionInterface(SessionInterface):
@@ -56,7 +57,7 @@ class RedisSessionInterface(SessionInterface):
             return
         redis_exp = self.get_redis_expiration_time(app, session)
         cookie_exp = self.get_expiration_time(app, session)
-        val = self.serializer.dumps(dict(session))
+        val = self.serializer.dumps(dict(session), protocol=self.pickle_protocol)
         self.redis.setex(self.prefix + session.sid, val,
                          int(redis_exp.total_seconds()))
         response.set_cookie(app.session_cookie_name, session.sid,

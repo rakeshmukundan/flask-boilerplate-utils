@@ -19,6 +19,7 @@ class Boilerplate(object):
         app.config.setdefault('REDIS_SESSIONS_DB', 1)
         app.config.setdefault('REDIS_SESSIONS_HOST', '127.0.0.1')
         app.config.setdefault('REDIS_SESSIONS_PORT', 6379)
+        app.config.setdefault('REDIS_SESSIONS_PICKLE_PROTO', 3)
         app.config.setdefault('BABEL_ENABLED', False)
 
         
@@ -57,7 +58,10 @@ class Boilerplate(object):
                 port=app.config.get('REDIS_SESSIONS_PORT'),
                 db=app.config.get('REDIS_SESSIONS_DB')
             )
-            app.session_interface = RedisSessionInterface(redis=redis)
+            app.session_interface = RedisSessionInterface(
+                redis=redis, 
+                pickle_protocol=app.config.get('REDIS_SESSIONS_PICKLE_PROTO')
+            )
 
         if app.config.get('BABEL_ENABLED'):
             from flask.ext.babel import Babel
