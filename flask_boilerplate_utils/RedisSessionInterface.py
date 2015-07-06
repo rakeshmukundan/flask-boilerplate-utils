@@ -8,25 +8,25 @@ from flask.sessions import SessionInterface, SessionMixin
 
 class RedisSession(CallbackDict, SessionMixin):
 
-    def __init__(self, initial=None, sid=None, new=False, pickle_protocol=None):
+    def __init__(self, initial=None, sid=None, new=False):
         def on_update(self):
             self.modified = True
         CallbackDict.__init__(self, initial, on_update)
         self.sid = sid
         self.new = new
         self.modified = False
-        self.pickle_protocol = pickle_protocol
 
 
 class RedisSessionInterface(SessionInterface):
     serializer = pickle
     session_class = RedisSession
 
-    def __init__(self, redis=None, prefix='session:'):
+    def __init__(self, redis=None, prefix='session:', pickle_protocol=None):
         if redis is None:
             redis = Redis()
         self.redis = redis
         self.prefix = prefix
+        self.pickle_protocol = pickle_protocol
 
     def generate_sid(self):
         return str(uuid4())
