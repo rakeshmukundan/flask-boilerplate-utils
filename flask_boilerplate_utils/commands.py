@@ -79,16 +79,18 @@ class Run(BaseCommand):
     option_list = (
         Option('--hostname', '-h', dest='hostname', default=None, type=str),
         Option('--port', '-p', dest='port', default=None, type=int),
-        Option('--no-debug', '-n', dest='debug', default=True, action='store_false'),       
+        Option('--no-debug', '-n', dest='debug', default=True, action='store_false'),    
+        Option('--no-threaded', dest='threaded', default=True, action='store_false'),
     ) + BaseCommand.option_list
 
-    def run(self, port, hostname, debug, config, **kwargs):
+    def run(self, port, hostname, debug, config, threaded, **kwargs):
         if port is None:
             port = self.app.config.setdefault('LISTEN_PORT', 8000)
         if hostname is None:
-            hostname = self.app.config.setdefault('LISTEN_HOST', '127.0.0.1')
+            hostname = self.app.config.setdefault('LISTEN_HOST', '0.0.0.0')
 
-        self.app.run(debug=debug, host=hostname, port=port)
+
+        self.app.run(debug=debug, host=hostname, port=port, threaded=threaded)
 
 class Test(BaseCommand):
     def run(self, **kwargs):
